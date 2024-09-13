@@ -44,6 +44,7 @@
 Получим на выходе
 
 ```json
+python manage.py createsuperuser
 {
   "author": 1,
   "image": "/media/images/111.jpg",

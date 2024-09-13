@@ -68,4 +68,4 @@ class PostView(APIView):
             obj.delete()
             return Response({"message": "deleted"},200)
         except Post.DoesNotExist:
-            return Response({"message": "not found"}, status=404)
+            raise NotFound(detail="Post not found")

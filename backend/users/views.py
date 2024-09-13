@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.serializers.user import RegisterSerializer
+from users.serializers.user import RegisterSerializer, UserSerializer
 
 
 class RegisterView(APIView):
@@ -30,3 +30,11 @@ class ObtainAuthTokenView(APIView):
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key})
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CurrentUserApiView(APIView):
+    def get(self, request):
+        token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+        user = Token.objects.get(key=token).user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)

@@ -23,10 +23,9 @@ class LoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    Для возврата автора поста
-    Пока что только email
+    Для возврата юзера
     """
 
     class Meta:
         model = CustomUser
-        fields = ('email',)
+        fields = ('id', 'email', 'first_name', 'last_name')

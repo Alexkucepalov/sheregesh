@@ -11,11 +11,11 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     """Класс админки"""
-    list_display = ('author', 'time_created', 'moderated', 'image_tag')
-    fields = ('author', 'moderated', 'image_tag', 'tags', 'description', 'latitude', 'longitude')
+    list_display = ('author', 'time_created', 'status', 'image_tag')
+    fields = ('author', 'status', 'image_tag', 'tags', 'description', 'latitude', 'longitude')
     readonly_fields = ('image_tag',)
-    list_editable = ('moderated',)
-    list_filter = ('moderated',)
+    list_editable = ('status',)
+    list_filter = ('status',)
 
 
 @admin.register(Comment)

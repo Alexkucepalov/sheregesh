@@ -1,11 +1,12 @@
 from PIL import Image
 from rest_framework import status, permissions
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import NotFound
 
-from .models import Post
+from .models import Post, Tag
 from .serializers.post import PostSerializer
+from .serializers.tag import TagSerializer
 
 
 class PostView(APIView):
@@ -22,7 +23,7 @@ class PostView(APIView):
             return Response(serializer.data)
         else:
             # Получаем список всех записей с координатами
-            posts = Post.objects.filter(latitude__isnull=False, longitude__isnull=False)
+            posts = Post.objects.filter(latitude__isnull=False, longitude__isnull=False, status='published')
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
 
@@ -54,8 +55,13 @@ class PostView(APIView):
 
             # Создаем объект Post
             post = Post(author=user, image=image_file, likes=0, views=0, latitude=latitude, longitude=longitude)
-            post.save()
 
+            # установить теги по post.image.path
+            tags_str = []  # CALL NEURO
+            for tag in tags_str:
+                tag_orm = Tag.objects.create(name=tag)
+                post.tags.add(tag_orm)
+            post.save()
             # Создаем сериализатор для возврата ответа
             serializer = PostSerializer(post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -66,6 +72,15 @@ class PostView(APIView):
         try:
             obj = Post.objects.get(pk=pk)
             obj.delete()
-            return Response({"message": "deleted"},200)
+            return Response({"message": "deleted"}, 200)
         except Post.DoesNotExist:
             raise NotFound(detail="Post not found")
+
+
+class TagsAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        tags = Tag.objects.all()
+        serializer = TagSerializer(tags, many=True)
+        return Response(serializer.data)

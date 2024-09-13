@@ -19,6 +19,10 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):  # Наследуемся от PermissionsMixin
+    first_name = models.CharField(max_length=128, default='Имя')
+    last_name = models.CharField(max_length=128, default='Фамилия')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    city = models.CharField(max_length=128, blank=True, null=True)
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False, verbose_name='Модератор')
@@ -36,3 +40,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):  # Наследуемся 
 
     def get_short_name(self):
         return self.email
+
+# TODO точность GpS
+# TODO докер
+# TODO celery в процессе обработки

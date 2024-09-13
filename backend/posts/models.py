@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils.safestring import mark_safe
 
 
 class Tag(models.Model):
@@ -17,6 +18,13 @@ class Post(models.Model):
 
     likes = models.PositiveIntegerField(default=0)
     views = models.PositiveIntegerField(default=0)
+
+    moderated = models.BooleanField(default=False)
+
+    def image_tag(self):
+        return mark_safe('<img src="%s" width="150" height="150" />' % self.image.url)
+
+    image_tag.allow_tags = True
 
 
 class Comment(models.Model):

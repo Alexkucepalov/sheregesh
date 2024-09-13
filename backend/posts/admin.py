@@ -10,7 +10,12 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    pass
+    """Класс админки"""
+    list_display = ('author', 'time_created', 'moderated', 'image_tag')
+    fields = ('author', 'moderated', 'image_tag', 'tags', 'description', 'latitude', 'longitude')
+    readonly_fields = ('image_tag',)
+    list_editable = ('moderated',)
+    list_filter = ('moderated',)
 
 
 @admin.register(Comment)

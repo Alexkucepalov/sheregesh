@@ -1,15 +1,19 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, permissions
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound, AuthenticationFailed
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 
 from .models import Post, Tag
 from .serializers.post import PostSerializer
 from .serializers.tag import TagSerializer
+from utils import get_header_params
 from .utils.get_metadata_from_photo import get_gps_info
 
 
-class PostView(APIView):
+@swagger_auto_schema(manual_parameters=get_header_params())
+class PostView(GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, pk=None):
@@ -66,10 +70,28 @@ class PostView(APIView):
             raise NotFound(detail="Post not found")
 
 
-class TagsAPIView(APIView):
+class TagsAPIView(GenericAPIView):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         tags = Tag.objects.all()
         serializer = TagSerializer(tags, many=True)
+        return Response(serializer.data)
+
+class TagsByPostIdAPIView(GenericAPIView):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, tagId, *args, **kwargs):
+
+        tag = Tag.objects.get(id=tagId)
+        posts = Post.objects.filter(tags=tag)
+
+        if not posts.exists():
+            return Response({"error": "No posts found for the provided tags"}, status=404)
+
+        serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)

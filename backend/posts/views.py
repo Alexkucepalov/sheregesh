@@ -1,4 +1,3 @@
-from PIL import Image
 from rest_framework import status, permissions
 from rest_framework.exceptions import NotFound, AuthenticationFailed
 from rest_framework.response import Response
@@ -7,6 +6,7 @@ from rest_framework.views import APIView
 from .models import Post, Tag
 from .serializers.post import PostSerializer
 from .serializers.tag import TagSerializer
+from .utils.get_metadata_from_photo import get_gps_info
 
 
 class PostView(APIView):
@@ -40,30 +40,17 @@ class PostView(APIView):
         image_file = request.FILES['image']
 
         try:
-            # Открываем изображение
-            image = Image.open(image_file)
-            # Извлекаем метаданные
-            exif_data = image._getexif()  # _getexif() возвращает данные EXIF
-
-            if exif_data:
-                gps_info = exif_data.get(34853)  # GPS info tag
-                if gps_info:
-                    latitude = gps_info[2][0]
-                    longitude = gps_info[4][0]
-                else:
-                    latitude, longitude = None, None
-            else:
-                latitude, longitude = None, None
-
-            # Создаем объект Post
-            post = Post(author=user, image=image_file, likes=0, views=0, latitude=latitude, longitude=longitude)
-
-            # установить теги по post.image.path
-            tags_str = []  # CALL NEURO
-            for tag in tags_str:
-                tag_orm = Tag.objects.create(name=tag)
-                post.tags.add(tag_orm)
+            post = Post.objects.create(author=user, image=image_file)
+            lat, lon = get_gps_info(post.image.path)
+            post.latitude = lat
+            post.longitude = lon
             post.save()
+            # установить теги по post.image.path
+            # tags_str = []  # CALL NEURO
+            # for tag in tags_str:
+            #     tag_orm = Tag.objects.create(name=tag)
+            #     post.tags.add(tag_orm)
+            # post.save()
             # Создаем сериализатор для возврата ответа
             serializer = PostSerializer(post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

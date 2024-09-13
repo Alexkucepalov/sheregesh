@@ -1,6 +1,6 @@
 from PIL import Image
 from rest_framework import status, permissions
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -30,6 +30,8 @@ class PostView(APIView):
     def post(self, request, *args, **kwargs):
         # Получаем авторизованного пользователя
         user = request.user
+        if not user.is_authenticated:
+            raise AuthenticationFailed()
 
         # Проверяем наличие изображения в запросе
         if 'image' not in request.FILES:

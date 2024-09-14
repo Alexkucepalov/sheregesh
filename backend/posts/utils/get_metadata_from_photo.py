@@ -5,10 +5,9 @@ from PIL import Image
 def get_exif_data(image_path):
     try:
         # Открываем изображение
-        image = Image.open(image_path)
-        # Получаем EXIF данные
-        exif_data = piexif.load(image.info['exif'])
-        return exif_data
+        with Image.open(image_path) as image:
+            exif_data = piexif.load(image.info['exif'])
+            return exif_data
     except Exception as e:
         print(f"Ошибка при получении EXIF данных: {e}")
         return None

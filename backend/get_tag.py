@@ -41,5 +41,3 @@ def get_description(filepath):
     translator = GoogleTranslator(source='auto', target='ru')
     perevod = translator.translate(res['message']['content'])
     return perevod
-
-print(get_description('media\images\IMG_20240911_192513.jpg'))

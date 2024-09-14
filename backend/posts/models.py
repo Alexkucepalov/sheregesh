@@ -23,7 +23,7 @@ class Post(models.Model):
     """
     author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, verbose_name='Автор')
     time_created = models.DateTimeField(auto_now=True, verbose_name='Время создания')
-    tags = models.ManyToManyField(Tag, verbose_name='Теги', blank=True, null=True)
+    tags = models.ManyToManyField(Tag, verbose_name='Теги')
     description = models.TextField(verbose_name='Описание', blank=True, null=True)
     image = models.ImageField(upload_to='images/')
     latitude = models.FloatField(null=True, blank=True, verbose_name='Широта')

@@ -1,14 +1,14 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, permissions
-from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound, AuthenticationFailed
-from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 
+from utils import get_header_params
 from .models import Post, Tag
 from .serializers.post import PostSerializer
 from .serializers.tag import TagSerializer
-from utils import get_header_params
+from .tasks import set_tag_for_post, set_description_for_post
 from .utils.get_metadata_from_photo import get_gps_info
 
 
@@ -32,33 +32,36 @@ class PostView(GenericAPIView):
             return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        # Получаем авторизованного пользователя
         user = request.user
+
+        # Проверяем аутентификацию
         if not user.is_authenticated:
-            raise AuthenticationFailed()
+            raise AuthenticationFailed("User is not authenticated")
 
         # Проверяем наличие изображения в запросе
-        if 'image' not in request.FILES:
+        image_file = request.FILES.get('image')
+        if not image_file:
             return Response({'error': 'Image file is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        image_file = request.FILES['image']
 
         try:
             post = Post.objects.create(author=user, image=image_file)
             lat, lon = get_gps_info(post.image.path)
-            post.latitude = lat
-            post.longitude = lon
+
+            # Проверка на None (либо где-то должно происходить исключение)
+            if lat is not None and lon is not None:
+                post.latitude = lat
+                post.longitude = lon
+
             post.save()
-            # установить теги по post.image.path
-            # tags_str = []  # CALL NEURO
-            # for tag in tags_str:
-            #     tag_orm = Tag.objects.create(name=tag)
-            #     post.tags.add(tag_orm)
-            # post.save()
-            # Создаем сериализатор для возврата ответа
+
+            set_tag_for_post.delay(post.id)
+            set_description_for_post.delay(post.id)
+
             serializer = PostSerializer(post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         except Exception as e:
+            # Логирование ошибки может быть полезным для отладки
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
@@ -80,13 +83,13 @@ class TagsAPIView(GenericAPIView):
         serializer = TagSerializer(tags, many=True)
         return Response(serializer.data)
 
+
 class TagsByPostIdAPIView(GenericAPIView):
     serializer_class = PostSerializer
     queryset = Post.objects.all()
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, tagId, *args, **kwargs):
-
         tag = Tag.objects.get(id=tagId)
         posts = Post.objects.filter(tags=tag)
 

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 
 const UploadContainer = styled.div`
   display: flex;
@@ -9,8 +7,6 @@ const UploadContainer = styled.div`
   align-items: center;
   justify-content: center;
   height: 100vh;
-  width: 100vw;
-  margin-top: 30px;
 `;
 
 const UploadBox = styled.div`
@@ -52,19 +48,19 @@ const UploadButton = styled.button`
   }
 `;
 
-const MapContainerStyled = styled.div`
-  width: 30%;
-  height: 80%;
+const MapContainer = styled.div`
+  width: 100%;
+  height: 70vh;
   position: relative;
   margin-top: 20px;
-  margin-bottom: 40px;
 `;
 
 const UploadPhotoPage = () => {
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
   const [posts, setPosts] = useState([]);
-  const [showMap, setShowMap] = useState(false);
+  const [map, setMap] = useState(null);
+  const [markers, setMarkers] = useState([]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -80,6 +76,7 @@ const UploadPhotoPage = () => {
       const response = await fetch('http://127.0.0.1:8000/posts');
       const data = await response.json();
       setPosts(data);
+      updateMap(data); // Обновить маркеры на карте с новыми данными
     } catch (error) {
       console.error('Ошибка при получении постов:', error);
     }
@@ -92,25 +89,22 @@ const UploadPhotoPage = () => {
     }
 
     const formData = new FormData();
-    formData.append('author', 1); // Укажите актуальный ID автора
+    formData.append('author', 1); // Replace with the actual author ID or get it dynamically if needed
     formData.append('image', file);
     formData.append('likes', 0);
     formData.append('views', 0);
-
-    const token = '548edc3d13dc18e88730f5a5a0e967463acfd241'.replace(/[^\x20-\x7E]/g, ''); // Удаляем любые невалидные символы
 
     try {
       const response = await fetch('http://localhost:8000/posts/', {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Token ${token}`, // Проверяем токен на корректность
+          'Authorization': 'Token ' + '75e7c6ddd85b410f9bc50f74e4d443b6349877d9',
         },
       });
 
       if (response.ok) {
         setUploadStatus('Фотография успешно загружена!');
-        setShowMap(true); // Показать карту после успешной загрузки
         await fetchPosts(); // Обновить список постов после успешной загрузки
       } else {
         setUploadStatus('Ошибка загрузки фотографии.');
@@ -121,11 +115,42 @@ const UploadPhotoPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (showMap) {
-      fetchPosts(); // Загружаем посты только если карта должна быть показана
+  const updateMap = (posts) => {
+    if (map) {
+      // Удаление старых маркеров
+      markers.forEach(marker => marker.destroy());
+      const newMarkers = [];
+
+      posts.forEach((post) => {
+        const marker = new window.mapgl.Marker(map, {
+          coordinates: [post.longitude, post.latitude],
+          icon: post.image,
+          label: { text: 'Загруженная фотография', color: 'blue' },
+        });
+        newMarkers.push(marker);
+      });
+
+      setMarkers(newMarkers); // Сохранение новых маркеров
     }
-  }, [showMap]);
+  };
+
+  useEffect(() => {
+    const mapgl = window.mapgl;
+
+    const mapInstance = new mapgl.Map('map', {
+      center: [87.932473, 52.950112],
+      zoom: 13,
+      key: '97350a6c-bdfe-429c-aec8-1b6a724f2053',
+      style: 'c080bb6a-8134-4993-93a1-5b4d8c36a59b',
+    });
+
+    setMap(mapInstance);
+    fetchPosts(); // Загрузка постов при инициализации карты
+
+    return () => {
+      mapInstance.destroy();
+    };
+  }, []);
 
   return (
     <UploadContainer>
@@ -142,29 +167,10 @@ const UploadPhotoPage = () => {
       </UploadBox>
       <UploadButton onClick={handleUpload}>Загрузить фото</UploadButton>
       {uploadStatus && <p>{uploadStatus}</p>}
-
-      {showMap && (
-        <MapContainerStyled>
-          <MapContainer center={[52.950112, 87.932473]} zoom={13} style={{ height: '100%', width: '100%' }}>
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {posts.map((post, index) => (
-              post.latitude && post.longitude ? (
-                <Marker key={index} position={[post.latitude, post.longitude]}>
-                  <Popup>
-                    <img src={`http://localhost:8000${post.image}`} alt="Uploaded" width="100" />
-                    <div>местоположение</div>
-                  </Popup>
-                </Marker>
-              ) : null
-            ))}
-          </MapContainer>
-        </MapContainerStyled>
-      )}
+      <MapContainer id="map"></MapContainer>
     </UploadContainer>
   );
 };
 
 export default UploadPhotoPage;
+    

@@ -1,95 +1,159 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import Slider from 'react-slick';
+import logo from './img/logo.svg'; // Ensure the logo file is in this path
+import photo1 from './img/photo1.jpg';
+import photo2 from './img/photo2.jpg';
 
 const Container = styled.div`
-  width: 100vw;
+  width: 100vw; // Correcting the typo from 100vр to 100vw
   height: 100vh;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden; // To prevent any potential horizontal scrolling
 `;
+
 
 const MapContainer = styled.div`
   width: 100%;
-  height: 100%;
+  height: 70vh;
+  position: relative;
+`;
+
+const GeoButton = styled.button`
+  position: absolute;
+  top: 150px;
+  left: 20px;
+  padding: 12px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #45A049;
+  }
 `;
 
 const PhotosModal = styled.div`
-  width: 400px;
-  height: 100%;
+  width: 60vw;
+  max-width: 800px;
+  height: 70vh;
   background-color: white;
-  position: absolute;
+  position: fixed;
   right: 0;
-  top: 0;
+  top: 15%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.5);
-  z-index: 10;
+  box-shadow: -2px 0px 20px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 15px;
+  z-index: 1000;
+  overflow: hidden;
 `;
 
 const CloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  padding: 10px;
-  font-size: 16px;
-  background-color: red;
-  color: white;
+  width: 40px;
+  height: 40px;
   border: none;
+  border-radius: 50%;
+  background-color: #FF5C5C;
+  color: white;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
 `;
 
-const Photo = styled.img`
-  width: 80%;
-  height: auto;
+const Title = styled.h2`
+  font-size: 28px;
+  color: #333;
+  margin: 10px 0;
+  text-align: center;
+`;
+
+const Description = styled.p`
+  font-size: 18px;
+  color: #555;
+  text-align: center;
   margin-bottom: 20px;
-  object-fit: cover;
+  max-width: 80%;
 `;
 
-const NavButton = styled.button`
-  padding: 10px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin: 0 10px;
+const StyledSlider = styled(Slider)`
+  width: 100%;
+  .slick-slide img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
 `;
 
-const GeoButton = styled.button`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  padding: 10px;
-  font-size: 16px;
-  background-color: green;
-  color: white;
-  border: none;
+const PhotoBlocksContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 1300px;
+  margin-top: 30px;
+`;
+
+const PhotoBlock = styled.div`
+  width: 417px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+`;
+
+const PhotoImage = styled.img`
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+
+`;
+
+const BlockButton = styled.button`
+  margin-top: -20px;
+  padding: 10px 20px;
+  background-color: white;
+  border-radius: 25px;
+  font-size: 18px;
   cursor: pointer;
-  z-index: 20;
+  background-color: #C6FF39;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const MapComponent = () => {
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [map, setMap] = useState(null);
 
   const locations = [
     {
       coordinates: [87.932473, 52.950112],
-      photos: [
-        'https://via.placeholder.com/400x100',
-        'https://via.placeholder.com/400x200',
-        'https://via.placeholder.com/400x300',
-      ],
+      photos: [photo1, photo2],
+      title: 'Место 1',
+      description: 'Описание места 1. Здесь можно подробно описать, что интересного можно увидеть и сделать в этом месте.',
     },
     {
       coordinates: [87.956106, 52.95057],
-      photos: [
-        'https://via.placeholder.com/400x100',
-        'https://via.placeholder.com/400x200',
-        'https://via.placeholder.com/400x300',
-      ],
+      photos: [photo1, photo2],
+      title: 'Место 2',
+      description: 'Описание места 2. Подробности о достопримечательностях и активностях, которые можно сделать в этом месте.',
     },
   ];
 
@@ -98,8 +162,8 @@ const MapComponent = () => {
 
     const mapInstance = new mapgl.Map('map', {
       center: [87.932473, 52.950112],
-      zoom: 11,
-      key: 'dfa042d5-5608-43fe-b209-f870f5c8d91a',
+      zoom: 13,
+      key: '97350a6c-bdfe-429c-aec8-1b6a724f2053',
       style: 'c080bb6a-8134-4993-93a1-5b4d8c36a59b',
     });
 
@@ -110,7 +174,6 @@ const MapComponent = () => {
 
       marker.on('click', () => {
         setSelectedLocation(location);
-        setCurrentPhotoIndex(0);
       });
     });
 
@@ -147,22 +210,6 @@ const MapComponent = () => {
     setSelectedLocation(null);
   };
 
-  const nextPhoto = () => {
-    if (selectedLocation) {
-      setCurrentPhotoIndex((prevIndex) =>
-        prevIndex < selectedLocation.photos.length - 1 ? prevIndex + 1 : 0
-      );
-    }
-  };
-
-  const prevPhoto = () => {
-    if (selectedLocation) {
-      setCurrentPhotoIndex((prevIndex) =>
-        prevIndex > 0 ? prevIndex - 1 : selectedLocation.photos.length - 1
-      );
-    }
-  };
-
   return (
     <Container>
       <MapContainer id="map"></MapContainer>
@@ -170,19 +217,41 @@ const MapComponent = () => {
 
       {selectedLocation && (
         <PhotosModal>
-          <CloseButton onClick={closeModal}>Закрыть</CloseButton>
-
-          <Photo
-            src={selectedLocation.photos[currentPhotoIndex]}
-            alt={`Photo ${currentPhotoIndex + 1}`}
-          />
-
-          <div>
-            <NavButton onClick={prevPhoto}>Назад</NavButton>
-            <NavButton onClick={nextPhoto}>Вперед</NavButton>
-          </div>
+          <CloseButton onClick={closeModal}>×</CloseButton>
+          <Title>{selectedLocation.title}</Title>
+          <Description>{selectedLocation.description}</Description>
+          <StyledSlider
+            dots={false}
+            infinite={true}
+            speed={500}
+            slidesToShow={1}
+            slidesToScroll={1}
+            autoplay={true}
+            autoplaySpeed={3000}
+          >
+            {selectedLocation.photos.map((photo, index) => (
+              <div key={index}>
+                <PhotoImage src={photo} alt={`Slide ${index + 1}`} />
+              </div>
+            ))}
+          </StyledSlider>
         </PhotosModal>
       )}
+
+      <PhotoBlocksContainer>
+        <PhotoBlock>
+          <PhotoImage src={photo1} alt="Photo 1" />
+          <BlockButton>Получить</BlockButton>
+        </PhotoBlock>
+        <PhotoBlock>
+          <PhotoImage src={photo2} alt="Photo 2" />
+          <BlockButton>Участвовать</BlockButton>
+        </PhotoBlock>
+        <PhotoBlock>
+          <PhotoImage src={photo1} alt="Photo 3" />
+          <BlockButton>Получить</BlockButton>
+        </PhotoBlock>
+      </PhotoBlocksContainer>
     </Container>
   );
 };

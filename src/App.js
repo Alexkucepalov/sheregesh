@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import MapComponent from './MapComponent';
 import UploadPhotoPage from './UploadPhotoPage'; // Import the new component
+import ProfilePage from './ProfilePage'; // Import the new profile component
 import logo from './img/logo.svg'; // Ensure the logo file is in this path
 
 const Container = styled.div`
@@ -95,6 +96,7 @@ const App = () => {
           <Nav>
             <NavItem to="/">Карта</NavItem>
             <NavItem to="/upload">Загрузить Фото</NavItem> {/* New menu item */}
+            <NavItem to="/profile">Профиль</NavItem> {/* New profile menu item */}
           </Nav>
           <ProfileIcon />
         </Header>
@@ -109,6 +111,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<MapComponent />} /> {/* Main map component */}
           <Route path="/upload" element={<UploadPhotoPage />} /> {/* Route to new upload page */}
+          <Route path="/profile" element={<ProfilePage />} /> {/* Route to new profile page */}
         </Routes>
       </Container>
     </Router>

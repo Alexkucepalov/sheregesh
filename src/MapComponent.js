@@ -2,19 +2,23 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Slider from 'react-slick';
 import logo from './img/logo.svg'; // Ensure the logo file is in this path
-import photo1 from './img/photo1.jpg';
-import photo2 from './img/photo2.jpg';
+import photo1 from './img/кружка.png';
+import photo2 from './img/шерегеш.png';
+import photo3 from './img/скидка.png';
 
 const Container = styled.div`
-  width: 100vw;
+  width: 100vw; // Correcting the typo from 100vр to 100vw
   height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  overflow-x: hidden; // To prevent any potential horizontal scrolling
 `;
+
 
 const MapContainer = styled.div`
   width: 100%;
-  height: 70vh;
+  height: 100vh;
   position: relative;
 `;
 
@@ -94,6 +98,46 @@ const StyledSlider = styled(Slider)`
     width: 100%;
     height: auto;
     border-radius: 10px;
+  }
+`;
+
+const PhotoBlocksContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 1300px;
+  margin-top: 80px;
+  margin-bottom: 80px;
+
+`;
+
+const PhotoBlock = styled.div`
+  width: 417px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+`;
+
+const PhotoImage = styled.img`
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+
+`;
+
+const BlockButton = styled.button`
+  margin-top: -20px;
+  padding: 10px 20px;
+  background-color: white;
+  border-radius: 25px;
+  font-size: 18px;
+  cursor: pointer;
+  background-color: #C6FF39;
+
+  &:hover {
+    background-color: #f0f0f0;
   }
 `;
 
@@ -190,12 +234,27 @@ const MapComponent = () => {
           >
             {selectedLocation.photos.map((photo, index) => (
               <div key={index}>
-                <img src={photo} alt={`Slide ${index + 1}`} />
+                <PhotoImage src={photo} alt={`Slide ${index + 1}`} />
               </div>
             ))}
           </StyledSlider>
         </PhotosModal>
       )}
+
+      <PhotoBlocksContainer>
+        <PhotoBlock>
+          <PhotoImage src={photo1} alt="Photo 1" />
+          <BlockButton>Получить</BlockButton>
+        </PhotoBlock>
+        <PhotoBlock>
+          <PhotoImage src={photo2} alt="Photo 2" />
+          <BlockButton>Участвовать</BlockButton>
+        </PhotoBlock>
+        <PhotoBlock>
+          <PhotoImage src={photo3} alt="Photo 3" />
+          <BlockButton>Получить</BlockButton>
+        </PhotoBlock>
+      </PhotoBlocksContainer>
     </Container>
   );
 };
